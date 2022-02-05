@@ -1,13 +1,17 @@
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v9'
 import { token, clientId, guildId } from './config.json'
+import fs from 'fs'
 
-const commands = [
-  {
-    name: 'play',
-    description: 'Play song from url',
-  },
-]
+const commands: any[] = []
+const commandFiles = fs
+  .readdirSync('./dist/commands')
+  .filter((file) => file.endsWith('.js'))
+
+for (const file of commandFiles) {
+  const command = require(`./commands/${file}`)
+  commands.push(command.data.toJSON())
+}
 
 const rest = new REST({ version: '9' }).setToken(token)
 

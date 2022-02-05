@@ -1,7 +1,11 @@
 import { token } from './config.json'
 import prompt from 'prompt'
 import fs from 'fs'
-import { Client, Intents } from 'discord.js'
+import { Client, Collection, CommandInteraction, Intents } from 'discord.js'
+
+export interface CommandModule {
+  execute(interaction: { reply: (msg: string) => any }): Promise<void>
+}
 
 if (!token.length) {
   prompt.start()
@@ -24,6 +28,35 @@ if (!token.length) {
 
   client.once('ready', () => {
     console.log('Ready!')
+  })
+
+  const commands = new Collection<string, CommandModule>()
+  const commandFiles = fs
+    .readdirSync('./dist/commands')
+    .filter((file) => file.endsWith('.js'))
+
+  for (const file of commandFiles) {
+    const command = require(`./commands/${file}`)
+
+    commands.set(command.data.name, command)
+  }
+
+  client.on('interactionCreate', async (interaction) => {
+    if (!interaction.isCommand()) return
+
+    const command = commands.get(interaction.commandName)
+
+    if (!command) return
+
+    try {
+      await command.execute(interaction)
+    } catch (error) {
+      console.error(error)
+      await interaction.reply({
+        content: 'There was an error while executing this command!',
+        ephemeral: true,
+      })
+    }
   })
 
   client.login(token)
