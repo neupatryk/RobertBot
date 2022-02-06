@@ -6,6 +6,8 @@ export interface CommandModule {
   execute(interaction: CommandInteraction): Promise<void>
 }
 
+export const urlMap = new Map<string, { url: string; loop: boolean }>()
+
 if (!token.length || !clientId.length || !guildId.length) {
   console.warn('Configure your config first')
 } else {

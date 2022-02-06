@@ -8,7 +8,7 @@ import {
 } from '@discordjs/voice'
 import { CommandInteraction, GuildMember } from 'discord.js'
 import ytdl from 'ytdl-core'
-import { CommandModule } from '../app'
+import { CommandModule, urlMap } from '../app'
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,6 +29,8 @@ module.exports = {
       return
     }
 
+    const guildId = interaction.guildId
+
     const connection = joinVoiceChannel({
       channelId: channelId,
       guildId: interaction.guildId,
@@ -37,15 +39,18 @@ module.exports = {
 
     const url = interaction.options.get('url')!.value as string
 
-    const stream = ytdl(url, {
-      filter: 'audioonly',
-    }).on('error', (error) => {
-      interaction.reply('Something went wrong')
-      console.error('stream ~ error', error)
-      return
-    })
+    const createStream = () => {
+      const stream = ytdl(url, {
+        filter: 'audioonly',
+      }).on('error', (error) => {
+        interaction.reply('Something went wrong')
+        console.error('stream ~ error', error)
+        return
+      })
+      return stream
+    }
 
-    const resource = createAudioResource(stream, {
+    const resource = createAudioResource(createStream(), {
       inputType: StreamType.Arbitrary,
     })
 
@@ -54,8 +59,23 @@ module.exports = {
     player.play(resource)
     connection.subscribe(player)
 
+    const urlConfig = urlMap.get(guildId)
+    urlMap.set(guildId, {
+      url: url,
+      loop: urlConfig?.loop ? urlConfig.loop : false,
+    })
+
     player.on(AudioPlayerStatus.Idle, () => {
-      connection.destroy()
+      const urlConfig = urlMap.get(guildId)
+      if (urlConfig!.loop) {
+        const resource = createAudioResource(createStream(), {
+          inputType: StreamType.Arbitrary,
+        })
+        player.play(resource)
+      } else {
+        urlMap.delete(guildId)
+        connection.destroy()
+      }
     })
 
     interaction.reply('Playing ' + url)
