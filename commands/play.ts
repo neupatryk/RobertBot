@@ -5,7 +5,6 @@ import {
   createAudioResource,
   joinVoiceChannel,
   StreamType,
-  VoiceConnectionStatus,
 } from '@discordjs/voice'
 import { CommandInteraction, GuildMember } from 'discord.js'
 import ytdl from 'ytdl-core'
