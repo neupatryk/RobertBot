@@ -4,7 +4,7 @@ import fs from 'fs'
 import { Client, Collection, CommandInteraction, Intents } from 'discord.js'
 
 export interface CommandModule {
-  execute(interaction: { reply: (msg: string) => any }): Promise<void>
+  execute(interaction: CommandInteraction): Promise<void>
 }
 
 if (!token.length) {
@@ -24,7 +24,9 @@ if (!token.length) {
     }
   })
 } else {
-  const client = new Client({ intents: [Intents.FLAGS.GUILDS] })
+  const client = new Client({
+    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES],
+  })
 
   client.once('ready', () => {
     console.log('Ready!')
