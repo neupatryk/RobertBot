@@ -1,5 +1,4 @@
-import { token } from './config.json'
-import prompt from 'prompt'
+import { token, clientId, guildId } from './config.json'
 import fs from 'fs'
 import { Client, Collection, CommandInteraction, Intents } from 'discord.js'
 
@@ -7,22 +6,8 @@ export interface CommandModule {
   execute(interaction: CommandInteraction): Promise<void>
 }
 
-if (!token.length) {
-  prompt.start()
-
-  prompt.get(['token'], (err, result) => {
-    if (err) console.error(err)
-    else {
-      const config = { token: result.token.toString() }
-
-      fs.writeFile('./config.json', JSON.stringify(config), (err) => {
-        if (err) {
-          console.error(err)
-          return
-        }
-      })
-    }
-  })
+if (!token.length || !clientId.length || !guildId.length) {
+  console.warn('Configure your config first')
 } else {
   const client = new Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES],
