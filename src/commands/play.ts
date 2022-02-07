@@ -39,22 +39,24 @@ module.exports = {
 
     const url = interaction.options.get('url')!.value as string
 
-    const createStream = () => {
-      const stream = ytdl(url, {
-        filter: 'audioonly',
-      }).on('error', (error) => {
-        interaction.reply('Something went wrong')
-        console.error('stream ~ error', error)
-        return
-      })
-      return stream
-    }
+    const stream = ytdl(url, {
+      filter: 'audioonly',
+    }).on('error', async (error: any) => {
+      player.stop(true)
+      console.error('Play Error:', error)
 
-    const resource = createAudioResource(createStream(), {
-      inputType: StreamType.Arbitrary,
+      if (interaction.replied) {
+        await interaction.editReply('Something went wrong :confused:')
+      } else {
+        await interaction.reply('Something went wrong :confused:')
+      }
     })
 
     const player = createAudioPlayer()
+
+    const resource = createAudioResource(stream, {
+      inputType: StreamType.Arbitrary,
+    })
 
     player.play(resource)
     connection.subscribe(player)
@@ -65,19 +67,24 @@ module.exports = {
       loop: urlConfig?.loop ? urlConfig.loop : false,
     })
 
-    player.on(AudioPlayerStatus.Idle, () => {
-      const urlConfig = urlMap.get(guildId)
-      if (urlConfig!.loop) {
-        const resource = createAudioResource(createStream(), {
-          inputType: StreamType.Arbitrary,
-        })
-        player.play(resource)
-      } else {
-        urlMap.delete(guildId)
-        connection.destroy()
-      }
-    })
-
-    interaction.reply('Playing ' + url)
+    player
+      .on(AudioPlayerStatus.Idle, () => {
+        const urlConfig = urlMap.get(guildId)
+        if (urlConfig!.loop) {
+          const stream = ytdl(url, {
+            filter: 'audioonly',
+          })
+          const resource = createAudioResource(stream, {
+            inputType: StreamType.Arbitrary,
+          })
+          player.play(resource)
+        } else {
+          urlMap.delete(guildId)
+          connection.destroy()
+        }
+      })
+      .on(AudioPlayerStatus.Playing, async () => {
+        if (!interaction.replied) await interaction.reply('Playing ' + url)
+      })
   },
 } as CommandModule
