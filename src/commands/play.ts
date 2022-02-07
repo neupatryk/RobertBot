@@ -42,19 +42,27 @@ module.exports = {
     const createStream = () => {
       const stream = ytdl(url, {
         filter: 'audioonly',
-      }).on('error', (error) => {
-        interaction.reply('Something went wrong')
-        console.error('stream ~ error', error)
-        return
+      }).on('error', async (error: any) => {
+        console.error(
+          '🚀 ~ file: play.ts ~ line 46 ~ createStream ~ error',
+          error
+        )
+        player.stop(true)
+
+        if (interaction.replied) {
+          await interaction.editReply('Something went wrong :confused:')
+        } else {
+          await interaction.reply('Something went wrong :confused:')
+        }
       })
       return stream
     }
 
+    const player = createAudioPlayer()
+
     const resource = createAudioResource(createStream(), {
       inputType: StreamType.Arbitrary,
     })
-
-    const player = createAudioPlayer()
 
     player.play(resource)
     connection.subscribe(player)
@@ -65,19 +73,32 @@ module.exports = {
       loop: urlConfig?.loop ? urlConfig.loop : false,
     })
 
-    player.on(AudioPlayerStatus.Idle, () => {
-      const urlConfig = urlMap.get(guildId)
-      if (urlConfig!.loop) {
-        const resource = createAudioResource(createStream(), {
-          inputType: StreamType.Arbitrary,
-        })
-        player.play(resource)
-      } else {
-        urlMap.delete(guildId)
-        connection.destroy()
-      }
-    })
-
-    interaction.reply('Playing ' + url)
+    player
+      .on(AudioPlayerStatus.Idle, () => {
+        const urlConfig = urlMap.get(guildId)
+        if (urlConfig!.loop) {
+          const resource = createAudioResource(createStream(), {
+            inputType: StreamType.Arbitrary,
+          })
+          player.play(resource)
+        } else {
+          urlMap.delete(guildId)
+          connection.destroy()
+        }
+      })
+      .on(AudioPlayerStatus.Playing, async () => {
+        if (!interaction.replied)
+          await interaction
+            .reply('Playing ' + url)
+            .catch((reason) =>
+              console.error(
+                '🚀 ~ file: play.ts ~ line 91 ~ .on ~ reason',
+                reason
+              )
+            )
+      })
+      .on('error', (error) => {
+        console.error('🚀 ~ file: play.ts ~ line 89 ~ .on ~ error', error)
+      })
   },
 } as CommandModule
