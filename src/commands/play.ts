@@ -8,7 +8,7 @@ import {
 } from '@discordjs/voice'
 import { CommandInteraction, GuildMember } from 'discord.js'
 import ytdl from 'ytdl-core'
-import { CommandModule, urlMap } from '../app'
+import { urlMap, CommandModule } from '../utils'
 
 module.exports = {
   data: new SlashCommandBuilder()

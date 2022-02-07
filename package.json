@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "start": "tsc && node dist/app.js",
-    "deploy-commands": "tsc && node dist/deploy-commands.js"
+    "start": "tsc && node dist/src/app.js",
+    "deploy-commands": "tsc && node dist/src/deploy-commands.js"
   },
   "dependencies": {
     "@discordjs/builders": "^0.12.0",

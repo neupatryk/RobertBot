@@ -1,12 +1,7 @@
-import { token, clientId, guildId } from './config.json'
+import { token, clientId, guildId } from '../config.json'
 import fs from 'fs'
-import { Client, Collection, CommandInteraction, Intents } from 'discord.js'
-
-export interface CommandModule {
-  execute(interaction: CommandInteraction): Promise<void>
-}
-
-export const urlMap = new Map<string, { url: string; loop: boolean }>()
+import { Client, Collection, Intents } from 'discord.js'
+import { CommandModule } from './utils'
 
 if (!token.length || !clientId.length || !guildId.length) {
   console.warn('Configure your config first')
@@ -21,13 +16,12 @@ if (!token.length || !clientId.length || !guildId.length) {
 
   const commands = new Collection<string, CommandModule>()
   const commandFiles = fs
-    .readdirSync('./dist/commands')
+    .readdirSync('./dist/src/commands')
     .filter((file) => file.endsWith('.js'))
 
   for (const file of commandFiles) {
     const command = require(`./commands/${file}`)
-
-    commands.set(command.data.name, command)
+    commands.set(command.data?.name, command)
   }
 
   client.on('interactionCreate', async (interaction) => {

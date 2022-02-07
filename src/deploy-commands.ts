@@ -1,11 +1,11 @@
 import { REST } from '@discordjs/rest'
 import { Routes } from 'discord-api-types/v9'
-import { token, clientId, guildId } from './config.json'
+import { token, clientId, guildId } from '../config.json'
 import fs from 'fs'
 
 const commands: any[] = []
 const commandFiles = fs
-  .readdirSync('./dist/commands')
+  .readdirSync('./dist/src/commands')
   .filter((file) => file.endsWith('.js'))
 
 for (const file of commandFiles) {

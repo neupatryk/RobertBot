@@ -1,7 +1,7 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
 import { getVoiceConnection } from '@discordjs/voice'
 import { CommandInteraction } from 'discord.js'
-import { CommandModule, urlMap } from '../app'
+import { urlMap, CommandModule } from '../utils'
 
 module.exports = {
   data: new SlashCommandBuilder().setName('stop').setDescription('Stop music'),
