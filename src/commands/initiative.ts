@@ -74,15 +74,10 @@ module.exports = {
           'You are missing initiative roll. Roll a dice and add initiative modifier.'
         )
       } else {
+        initiativeMap.delete(guildId)
         interaction.reply(
           'New initiative order is set. Type your rolls and names with /ini name roll.'
         )
-        interaction.fetchReply().then((msg) => {
-          initiativeMap.set(guildId, {
-            messageHook: msg as Message,
-            entries: {},
-          })
-        })
       }
     }
   },
