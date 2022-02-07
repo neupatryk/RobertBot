@@ -1,5 +1,4 @@
 import { SlashCommandBuilder } from '@discordjs/builders'
-import { APIMessage } from 'discord-api-types'
 import { CommandInteraction, Message } from 'discord.js'
 import { CommandModule, initiativeMap } from '../utils'
 
