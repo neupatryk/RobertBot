@@ -19,7 +19,7 @@ module.exports = {
             subscription.player.state.status === 'playing'
           ) {
             const urlConfig = urlMap.get(guildId)
-            urlMap.set(guildId, { url: urlConfig!.url, loop: !urlConfig!.loop })
+            urlMap.set(guildId, { loop: !urlConfig!.loop })
             interaction.reply(
               `Music is${!urlConfig!.loop ? '' : ' not'} looped!`
             )
