@@ -7,7 +7,7 @@ import {
   StreamType,
 } from '@discordjs/voice'
 import { CommandInteraction, GuildMember } from 'discord.js'
-import ytdl from 'ytdl-core'
+import ytdl from 'discord-ytdl-core'
 import { urlMap, CommandModule } from '../utils'
 
 module.exports = {
@@ -42,45 +42,54 @@ module.exports = {
     const valid = ytdl.validateURL(url)
 
     if (valid) {
-      const createStream = (url: string) => {
+      const createStream = (url: string, begin: number) => {
         return ytdl(url, {
           filter: 'audioonly',
+          opusEncoded: true,
+          encoderArgs: ['-af', 'bass=g=10,dynaudnorm=f=200'],
+          seek: begin,
         })
       }
 
+      let interval: NodeJS.Timer
+      let begin = 0
       const urlConfig = urlMap.get(guildId)
       urlMap.set(guildId, {
         loop: urlConfig?.loop ? urlConfig.loop : false,
       })
 
       const player = createAudioPlayer()
-
       const conn = connection.subscribe(player)
-      const resource = createAudioResource(createStream(url), {
-        inputType: StreamType.Arbitrary,
+      const stream = createStream(url, begin)
+      const resource = createAudioResource(stream, {
+        inputType: StreamType.Opus,
       })
 
       player
         .on('error', async (error) => {
-          const resource = createAudioResource(createStream(url), {
-            inputType: StreamType.Arbitrary,
+          const resource = createAudioResource(createStream(url, begin), {
+            inputType: StreamType.Opus,
           })
           conn?.player.play(resource)
           console.error(error)
         })
-        .on(AudioPlayerStatus.Idle, () => {
+        .on(AudioPlayerStatus.Idle, async () => {
           const isLoop = urlMap.get(guildId)?.loop
           if (isLoop) {
-            const resource = createAudioResource(createStream(url), {
-              inputType: StreamType.Arbitrary,
+            begin = 0
+            const resource = createAudioResource(createStream(url, begin), {
+              inputType: StreamType.Opus,
             })
             conn?.player.play(resource)
           } else {
+            clearInterval(interval)
+            urlMap.delete(guildId)
             conn?.connection.destroy()
           }
         })
         .play(resource)
 
+      interval = setInterval(() => begin++, 1000)
       interaction.reply('Playing ' + url)
     } else {
       interaction.reply('Provide correct youtube link')
