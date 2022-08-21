@@ -3,6 +3,7 @@ import {
   AudioPlayerStatus,
   createAudioPlayer,
   createAudioResource,
+  DiscordGatewayAdapterCreator,
   joinVoiceChannel,
   StreamType,
 } from '@discordjs/voice'
@@ -34,7 +35,8 @@ module.exports = {
     const connection = joinVoiceChannel({
       channelId: channelId,
       guildId: interaction.guildId,
-      adapterCreator: interaction.guild!.voiceAdapterCreator,
+      adapterCreator: interaction.guild!
+        .voiceAdapterCreator as DiscordGatewayAdapterCreator,
     })
 
     const url = interaction.options.get('url')!.value as string
@@ -48,6 +50,7 @@ module.exports = {
           opusEncoded: true,
           encoderArgs: ['-af', 'bass=g=10,dynaudnorm=f=200'],
           seek: begin,
+          quality: 'lowest',
         })
       }
 
