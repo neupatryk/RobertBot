@@ -1,9 +1,8 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
 import { getVoiceConnection } from '@discordjs/voice'
-import { CommandInteraction } from 'discord.js'
-import { urlMap, CommandModule } from '../utils'
+import { SlashCommandBuilder, CommandInteraction } from 'discord.js'
+import { CommandModule, urlMap } from '../utils'
 
-module.exports = {
+export const command: CommandModule = {
   data: new SlashCommandBuilder().setName('stop').setDescription('Stop music'),
   async execute(interaction: CommandInteraction) {
     if (interaction.guildId) {
@@ -18,4 +17,4 @@ module.exports = {
       }
     }
   },
-} as CommandModule
+}

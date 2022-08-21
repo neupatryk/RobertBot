@@ -1,8 +1,7 @@
-import { SlashCommandBuilder } from '@discordjs/builders'
-import { CommandInteraction, Message } from 'discord.js'
+import { SlashCommandBuilder, CommandInteraction, Message } from 'discord.js'
 import { CommandModule, initiativeMap } from '../utils'
 
-module.exports = {
+export const command: CommandModule = {
   data: new SlashCommandBuilder()
     .setName('ini')
     .setDescription(
@@ -81,4 +80,4 @@ module.exports = {
       }
     }
   },
-} as CommandModule
+}

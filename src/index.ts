@@ -1,17 +1,19 @@
-import { token, clientId, guildId } from '../config.json'
+import { Client, Collection, GatewayIntentBits } from 'discord.js'
 import fs from 'fs'
-import { Client, Collection, Intents } from 'discord.js'
 import { CommandModule } from './utils'
+import { token, clientId, guildId } from '../config.json'
 
 if (!token.length || !clientId.length || !guildId.length) {
   console.warn('Configure your config first')
 } else {
   const client = new Client({
-    intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_VOICE_STATES],
+    intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates],
   })
 
-  client.once('ready', () => {
-    console.log('Ready!')
+  client.on('ready', () => {
+    if (client?.user) {
+      console.log(`Logged in as ${client.user.tag}!`)
+    }
   })
 
   const commands = new Collection<string, CommandModule>()
@@ -20,25 +22,25 @@ if (!token.length || !clientId.length || !guildId.length) {
     .filter((file) => file.endsWith('.js'))
 
   for (const file of commandFiles) {
-    const command = require(`./commands/${file}`)
-    commands.set(command.data?.name, command)
+    const {
+      command,
+    }: { command: CommandModule } = require(`./commands/${file}`)
+    commands.set(command.data.name!, command)
   }
 
   client.on('interactionCreate', async (interaction) => {
-    if (!interaction.isCommand()) return
+    if (!interaction.isChatInputCommand()) return
 
     const command = commands.get(interaction.commandName)
 
-    if (!command) return
-
     try {
-      await command.execute(interaction)
+      await command!.execute(interaction)
     } catch (error) {
-      console.error(error)
       await interaction.reply({
         content: 'There was an error while executing this command!',
         ephemeral: true,
       })
+      console.error(error)
     }
   })
 

@@ -1,7 +1,12 @@
-import { CommandInteraction, Message } from 'discord.js'
+import {
+  ChatInputCommandInteraction,
+  Message,
+  SlashCommandBuilder,
+} from 'discord.js'
 
 export interface CommandModule {
-  execute(interaction: CommandInteraction): Promise<void>
+  execute(interaction: ChatInputCommandInteraction): Promise<void>
+  data: Partial<SlashCommandBuilder>
 }
 
 export interface initiativeType {
