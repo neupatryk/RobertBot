@@ -10,10 +10,12 @@ import {
   SlashCommandBuilder,
   GuildMember,
 } from 'discord.js'
-import { Readable } from 'stream'
+import { Readable, Duplex } from 'stream'
 import fetch from 'node-fetch'
 import youtubeDlExec from 'youtube-dl-exec'
 import { CommandModule, urlMap } from '../utils'
+import Ffmpeg from 'fluent-ffmpeg'
+import pathToFfmpeg from 'ffmpeg-static'
 
 export const command: CommandModule = {
   data: new SlashCommandBuilder()
@@ -45,8 +47,24 @@ export const command: CommandModule = {
       })
 
     const createStream = async () => {
+      const duplexStream = new Duplex({
+        read: () => {},
+        write: (chunk, encoding, next) => {
+          duplexStream.push(chunk)
+          next()
+        },
+      }).on('error', console.log)
+
       const body = await fetch(format.url).then((res) => res.body)
-      return new Readable().wrap(body!).on('error', console.log)
+      const readableStream = new Readable().wrap(body!).on('error', console.log)
+
+      Ffmpeg(readableStream)
+        .noVideo()
+        .setFfmpegPath(pathToFfmpeg)
+        .format(format.ext)
+        .writeToStream(duplexStream)
+
+      return duplexStream
     }
 
     const resource = createAudioResource(await createStream())
