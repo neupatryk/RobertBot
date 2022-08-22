@@ -49,14 +49,15 @@ export const command: CommandModule = {
     const createStream = async () => {
       const duplexStream = new Duplex({
         read: () => {},
-        write: (chunk, encoding, next) => {
+        write: (chunk, _, next) => {
           duplexStream.push(chunk)
           next()
         },
-      }).on('error', console.log)
+      })
+      duplexStream.on('error', () => duplexStream.end())
 
       const body = await fetch(format.url).then((res) => res.body)
-      const readableStream = new Readable().wrap(body!).on('error', console.log)
+      const readableStream = new Readable().wrap(body!)
 
       Ffmpeg(readableStream)
         .noVideo()
@@ -69,7 +70,6 @@ export const command: CommandModule = {
 
     const resource = createAudioResource(await createStream())
     const player = createAudioPlayer()
-    player.on('error', console.log)
 
     player.play(resource)
     connection.subscribe(player)
